@@ -1,1 +1,10 @@
 #!/usr/bin/env python2.7
+# -*- coding: utf-8 -*-
+from gaius import cli
+
+
+def main():
+    cli.send_message()
+
+if __name__ is '__main__':
+    main()
