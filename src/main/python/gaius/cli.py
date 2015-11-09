@@ -17,11 +17,12 @@ from docopt import docopt
 
 
 def send_message():
+
     arguments = docopt(__doc__)
-    stack_name = arguments['stack']
-    parameters = arguments['parameters']
-    topic_arn = arguments['topic-arn']
-    region = arguments['region']
+    stack_name = arguments['--stack']
+    parameters = arguments['--parameters']
+    topic_arn = arguments['--topic-arn']
+    region = arguments['--region']
 
     message = transform_to_message_format(stack_name, parameters, region)
     crassus.notify_crassus(topic_arn, message, region)

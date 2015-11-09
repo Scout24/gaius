@@ -30,6 +30,7 @@ def set_properties(project):
     project.build_depends_on("unittest2")
     project.build_depends_on("mock")
     project.build_depends_on("moto")
+    project.build_depends_on("mockito-without-hardcoded-distribute-version")
     project.set_property('coverage_break_build', False)
 
     project.set_property('distutils_classifiers', [
