@@ -2,7 +2,13 @@
 from unittest import TestCase
 from gaius.crassus import notify_crassus
 import boto3
+import os
 from moto import mock_sns
+
+# Else we run into problems with mocking
+os.environ['http_proxy'] = ''
+os.environ['https_proxy'] = ''
+os.environ['no_proxy'] = ''
 
 
 class CrassusTests(TestCase):
