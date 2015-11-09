@@ -41,3 +41,5 @@ def set_properties(project):
         'Programming Language :: Python',
         'Topic :: System :: Systems Administration'
     ])
+
+    project.set_property('distutils_console_scripts', ['gaius=gaius.cli:send_message'])
