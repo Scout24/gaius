@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
-from gaius.crassus import notify_crassus
+from gaius.crassus import notify_crassus, transform_to_message_format
 import boto3
 import os
 from moto import mock_sns
@@ -24,5 +24,28 @@ class CrassusTests(TestCase):
 
     def test_notify_crassus(self):
         response = notify_crassus(
-            topic_arn=self.topic.arn, message='{}', region_name="eu-west-1")
+            stack_name='sample-stack',
+            parameters='parameter1=value1,parameter2=value2',
+            topic_arn=self.topic.arn, region="eu-west-1")
         self.assertEquals(response['ResponseMetadata']['HTTPStatusCode'], 200)
+
+    def test_should_transform_parameters_to_message(self):
+        stack_name = 'sample-stack'
+        parameters = 'parameter1=value1,parameter2=value2'
+        region = 'eu-west-1'
+
+        expected_message = (
+            '{'
+            '"parameters": {'
+            '"parameter1": "value1", '
+            '"parameter2": "value2"'
+            '}, '
+            '"region": "eu-west-1", '
+            '"stackName": "sample-stack", '
+            '"version": 1'
+            '}'
+        )
+
+        message = transform_to_message_format(
+            stack_name, parameters, region)
+        self.assertEquals(message, expected_message)
