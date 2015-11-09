@@ -35,7 +35,7 @@ def transform_to_message_format(stack_name, parameters, region='eu-west-1'):
     message['region'] = region
 
     parameter_list = [x for x in parameters.split(',')]
-    parameter_dict = dict((y.split('=') for y in parameter_list))
+    parameter_dict = dict([y.split('=') for y in parameter_list])
     message['parameters'] = parameter_dict
 
     return json.dumps(collections.OrderedDict(sorted(message.items())))
