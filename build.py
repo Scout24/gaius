@@ -53,3 +53,5 @@ def set_properties(project):
 
     project.set_property(
         'distutils_console_scripts', ['gaius=gaius.cli:send_message'])
+    project.version = '%s-%s' % (project.version,
+                                 os.environ.get('BUILD_NUMBER', 0))
