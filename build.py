@@ -1,4 +1,5 @@
 import os
+import sys
 
 from pybuilder.core import init, task, use_plugin
 from pybuilder.vcs import VCSRevision
@@ -27,6 +28,8 @@ default_task = "publish"
 def set_properties(project):
     project.depends_on("boto3")
     project.depends_on("docopt")
+    if sys.version_info[0:2] < (2, 7):
+        project.depends_on("ordereddict")
     project.build_depends_on("unittest2")
     project.build_depends_on("mock")
     project.build_depends_on("moto")

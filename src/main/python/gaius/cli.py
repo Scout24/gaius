@@ -11,7 +11,7 @@ Options:
 """
 
 import json
-import collections
+from gaius.compat import OrderedDict
 from gaius import crassus
 from docopt import docopt
 
@@ -38,4 +38,4 @@ def transform_to_message_format(stack_name, parameters, region='eu-west-1'):
     parameter_dict = dict([y.split('=') for y in parameter_list])
     message['parameters'] = parameter_dict
 
-    return json.dumps(collections.OrderedDict(sorted(message.items())))
+    return json.dumps(OrderedDict(sorted(message.items())))
