@@ -6,7 +6,7 @@ Usage:
 Options:
   -h --help                Show this.
   --stack STACK  Stack Name
-  --parameters PARAMETERS  Parameters in format key=value[, key=value]
+  --parameters PARAMETERS  Parameters in format key=value[,key=value]
   --topic-arn ARN  The ARN of the notify topic
   --region REGION  the region to deploy in
 """
@@ -27,4 +27,4 @@ def send_message():
     else:
         region = DEFAULT_REGION
 
-    crassus.notify_crassus(stack_name, parameters, topic_arn, region)
+    print crassus.notify_crassus(stack_name, parameters, topic_arn, region)
