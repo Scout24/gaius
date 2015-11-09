@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from gaius import cli
-from mock import patch, Mock
-from mockito import when, verify, unstub, any as any_value, mock, never
+from mock import patch
+from mockito import when, verify, any as any_value, mock
 
 
 class CliTests(TestCase):
@@ -24,7 +24,8 @@ class CliTests(TestCase):
             '}'
         )
 
-        message = cli.transform_to_message_format(stack_name, parameters, region)
+        message = cli.transform_to_message_format(
+            stack_name, parameters, region)
         self.assertEquals(message, expected_message)
 
     @patch('gaius.crassus.notify_crassus')
