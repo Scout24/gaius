@@ -24,7 +24,7 @@ def send_message():
     region = arguments['region']
 
     message = transform_to_message_format(stack_name, parameters, region)
-    crassus.notify_crassus(topic_arn, message)
+    crassus.notify_crassus(topic_arn, message, region)
 
 
 def transform_to_message_format(stack_name, parameters, region='eu-west-1'):

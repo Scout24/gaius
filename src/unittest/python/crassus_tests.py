@@ -10,13 +10,14 @@ class CrassusTests(TestCase):
     def setUp(self):
         self.my_mock_sns = mock_sns()
         self.my_mock_sns.start()
-        self.sns = boto3.client('sns')
-        self.arn = self.sns.create_topic(Name='test_sns')
+        self.sns = boto3.resource('sns', region_name="eu-west-1")
+        self.topic = self.sns.create_topic(Name='test_sns')
+        print self.topic.arn
 
     def tearDown(self):
         self.my_mock_sns.stop()
 
     def test_notify_crassus(self):
         response = notify_crassus(
-            topic_arn=self.arn['TopicArn'], message='{}')
+            topic_arn=self.topic.arn, message='{}')
         self.assertEquals(response['ResponseMetadata']['HTTPStatusCode'], 200)

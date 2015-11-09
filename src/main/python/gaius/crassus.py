@@ -2,8 +2,8 @@
 from boto3 import client
 
 
-def notify_crassus(topic_arn, message):
-    sns_client = client("sns")
+def notify_crassus(topic_arn, message, region_name='eu-west-1'):
+    sns_client = client('sns', region_name=region_name)
     json_str = sns_client.publish(
         TopicArn=topic_arn,
         Message=message
