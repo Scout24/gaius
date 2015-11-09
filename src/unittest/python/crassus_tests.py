@@ -13,13 +13,12 @@ os.environ['HTTPS_PROXY'] = ''
 os.environ['no_proxy'] = ''
 
 
-
 class CrassusTests(TestCase):
 
     def setUp(self):
         self.my_mock_sns = mock_sns()
         self.my_mock_sns.start()
-        self.sns = boto3.resource('sns', region_name="eu-west-1")
+        self.sns = boto3.resource('sns', region_name='eu-west-1')
         self.topic = self.sns.create_topic(Name='test_sns')
 
     def tearDown(self):
