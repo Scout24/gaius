@@ -6,7 +6,7 @@ about updates to a CFN stack so Crassus will trigger the update process.
 from boto3 import client
 
 
-def notify_crassus(topic_arn, message, region_name='eu-west-1'):
+def notify_crassus(topic_arn, message, region_name):
     sns_client = client('sns', region_name=region_name)
     json_str = sns_client.publish(
         TopicArn=topic_arn,

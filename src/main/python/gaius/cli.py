@@ -15,6 +15,8 @@ from gaius.compat import OrderedDict
 from gaius import crassus
 from docopt import docopt
 
+DEFAULT_REGION = 'eu-west-1'
+
 
 def send_message():
 
@@ -22,13 +24,16 @@ def send_message():
     stack_name = arguments['--stack']
     parameters = arguments['--parameters']
     topic_arn = arguments['--topic-arn']
-    region = arguments['--region']
+    if '--region' in arguments:
+        region = arguments['--region']
+    else:
+        region = DEFAULT_REGION
 
     message = transform_to_message_format(stack_name, parameters, region)
     crassus.notify_crassus(topic_arn, message, region)
 
 
-def transform_to_message_format(stack_name, parameters, region='eu-west-1'):
+def transform_to_message_format(stack_name, parameters, region):
     message = {}
     message['version'] = 1
     message['stackName'] = stack_name
