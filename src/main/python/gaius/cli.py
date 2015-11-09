@@ -1,13 +1,14 @@
 """
 Command line client for deploying CFN stacks via crassus
 Usage:
-    gaius --stack --parameters --topic-arn [--region]
+    gaius --stack STACK --parameters PARAMETERS --topic-arn ARN [--region REGION]
+
 Options:
   -h --help                Show this.
-  --stack  Stack Name
-  --parameters  Parameters in format....
-  --topic-arn  The ARN of the notify topic
-  --region  the region to deploy in
+  --stack STACK  Stack Name
+  --parameters PARAMETERS  Parameters in format key=value[, key=value]
+  --topic-arn ARN  The ARN of the notify topic
+  --region REGION  the region to deploy in
 """
 
 from gaius import crassus
