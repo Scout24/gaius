@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
-from gaius.crassus import notify_crassus
+from gaius.crassus import notify_crassus, transform_to_message_format
 import boto3
 import os
 from moto import mock_sns
