@@ -16,7 +16,7 @@ class CrassusTests(TestCase):
     def setUp(self):
         self.my_mock_sns = mock_sns()
         self.my_mock_sns.start()
-        self.sns = boto3.resource('sns', region_name="eu-west-1")
+        self.sns = boto3.resource('sns', region_name='eu-west-1')
         self.topic = self.sns.create_topic(Name='test_sns')
 
     def tearDown(self):
@@ -26,7 +26,7 @@ class CrassusTests(TestCase):
         response = notify_crassus(
             stack_name='sample-stack',
             parameters='parameter1=value1,parameter2=value2',
-            topic_arn=self.topic.arn, region="eu-west-1")
+            topic_arn=self.topic.arn, region='eu-west-1')
         self.assertEquals(response['ResponseMetadata']['HTTPStatusCode'], 200)
 
     def test_should_transform_parameters_to_message(self):
