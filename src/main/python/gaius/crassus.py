@@ -1,3 +1,7 @@
+"""
+Interface to the Crassus Lambda function. This module notifies Crassus
+about updates to a CFN stack so Crassus will trigger the update process.
+"""
 # -*- coding: utf-8 -*-
 from boto3 import client
 

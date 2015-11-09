@@ -41,8 +41,8 @@ class CliTests(TestCase):
         verify(cli.crassus).notify_crassus(
             'my::topic::arn',
             '{"parameters":'
-                ' {"parameter1": "value1", "parameter2": "value2"},'
-                ' "region": "eu-west-1", "stackName": "mystack",'
-                ' "version": 1}',
-                'eu-west-1'
+            ' {"parameter1": "value1", "parameter2": "value2"},'
+            ' "region": "eu-west-1", "stackName": "mystack",'
+            ' "version": 1}',
+            'eu-west-1'
         )
