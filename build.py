@@ -14,12 +14,14 @@ use_plugin("python.distutils")
 
 
 name = "gaius"
-summary = 'AWS lambda function for deployment automation'
+summary = 'The deployment client that triggers Crassus to deploy artefacts'
 description = """
-    AWS lambda function for deployment automation, which makes use of
-    sns/sqs for trigger and backchannel."""
+    Deployment client which pushs an AWS SNS message with CloudFormation-Stack
+    parameters as Payload to trigger
+    Crassus <https://github.com/ImmobilienScout24/crassus> as deployment Lambda
+    function"""
 license = 'Apache License 2.0'
-url = 'https://github.com/ImmobilienScout24/crassus'
+url = 'https://github.com/ImmobilienScout24/gaius'
 version = VCSRevision().get_git_revision_count()
 default_task = "publish"
 
