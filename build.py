@@ -34,7 +34,10 @@ def set_properties(project):
     project.build_depends_on("mock")
     project.build_depends_on("moto")
     project.build_depends_on("mockito-without-hardcoded-distribute-version")
-    project.set_property('coverage_break_build', False)
+    project.set_property("coverage_threshold_warn", 70)
+    project.set_property("coverage_branch_threshold_warn", 80)
+    project.set_property("coverage_branch_partial_threshold_warn", 80)
+    project.set_property('coverage_break_build', True)
 
     project.set_property('distutils_classifiers', [
         'Development Status :: 4 - Beta',
@@ -46,4 +49,5 @@ def set_properties(project):
         'Topic :: System :: Systems Administration'
     ])
 
-    project.set_property('distutils_console_scripts', ['gaius=gaius.cli:send_message'])
+    project.set_property(
+        'distutils_console_scripts', ['gaius=gaius.cli:send_message'])
