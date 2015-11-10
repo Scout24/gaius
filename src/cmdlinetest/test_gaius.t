@@ -3,11 +3,6 @@
 
 # These are the cram tests for the gaius.
 
-  $ export PROJECT_ROOT=$TESTDIR/../../
-  $ cp $TESTDIR/gaius_mock.py .
-  $ ls
-  gaius_mock.py
-
 # Test help
 
   $ gaius -h
@@ -24,7 +19,7 @@
 
 # Test failing @ wrong parametrization
 
-  $ gaius --stack crassus --topic-arn arn:aws:sns:eu-west-1::topic
+  $ gaius --stack some_stack --topic-arn arn:aws:sns:eu-west-1::topic
   Usage:
       gaius --stack STACK --parameters PARAMETERS --topic-arn ARN [--region REGION]
   [1]
