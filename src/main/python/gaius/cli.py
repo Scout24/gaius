@@ -8,13 +8,11 @@ Options:
   --stack STACK  Stack Name
   --parameters PARAMETERS  Parameters in format key=value[,key=value]
   --topic-arn ARN  The ARN of the notify topic
-  --region REGION  the region to deploy in
+  --region REGION  the region to deploy in [default: eu-west-1]
 """
 
 from gaius import crassus
 from docopt import docopt
-
-DEFAULT_REGION = 'eu-west-1'
 
 
 def send_message():
@@ -22,9 +20,6 @@ def send_message():
     stack_name = arguments['--stack']
     parameters = arguments['--parameters']
     topic_arn = arguments['--topic-arn']
-    if '--region' in arguments:
-        region = arguments['--region']
-    else:
-        region = DEFAULT_REGION
+    region = arguments['--region']
 
     print crassus.notify_crassus(stack_name, parameters, topic_arn, region)
