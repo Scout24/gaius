@@ -25,21 +25,3 @@ class CliTests(TestCase):
             'my::topic::arn',
             'eu-west-1'
         )
-
-    @patch('gaius.crassus.notify_crassus')
-    def test_send_message_with_no_region(self, notify_crassus_mock):
-        cli.crassus = mock(cli.crassus)
-        when(cli).docopt(any_value()).thenReturn({
-            '--stack': 'mystack',
-            '--parameters': 'parameter1=value1,parameter2=value2',
-            '--topic-arn': 'my::topic::arn'
-        })
-
-        cli.send_message()
-
-        verify(cli.crassus).notify_crassus(
-            'mystack',
-            'parameter1=value1,parameter2=value2',
-            'my::topic::arn',
-            'eu-west-1'
-        )
