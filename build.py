@@ -1,7 +1,7 @@
 import os
 import sys
 
-from pybuilder.core import init, task, use_plugin
+from pybuilder.core import init, use_plugin
 from pybuilder.vcs import VCSRevision
 
 
@@ -57,5 +57,7 @@ def set_properties(project):
         'Topic :: System :: Systems Administration'
     ])
 
+    project.set_property(
+        'distutils_console_scripts', ['gaius=gaius.cli:send_message'])
     project.version = '%s-%s' % (project.version,
                                  os.environ.get('BUILD_NUMBER', 0))
