@@ -5,10 +5,10 @@ Usage:
 
 Options:
   -h --help                Show this.
-  --stack STACK  Stack Name
-  --parameters PARAMETERS  Parameters in format key=value[,key=value]
-  --topic-arn ARN  The ARN of the notify topic
-  --region REGION  the region to deploy in [default: eu-west-1]
+  --stack STACK            Stack Name.
+  --parameters PARAMETERS  Parameters in format key=value[,key=value].
+  --topic-arn ARN          The ARN of the notify topic.
+  --region REGION          The region to deploy in. [default: eu-west-1]
 """
 
 from gaius import crassus
