@@ -14,7 +14,7 @@ Options:
 
 from docopt import docopt
 
-from . import back_channel, crassus
+from . import service
 
 
 def communicate():
@@ -24,5 +24,5 @@ def communicate():
     topic_arn = arguments['--topic-arn']
     region = arguments['--region']
     back_channel_name = arguments['--back-channel']
-    crassus.notify(stack_name, parameters, topic_arn, region)
-    back_channel.receive_messages(back_channel_name)
+    service.notify(stack_name, parameters, topic_arn, region)
+    service.receive(back_channel_name)
