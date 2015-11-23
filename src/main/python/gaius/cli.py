@@ -24,5 +24,5 @@ def communicate():
     topic_arn = arguments['--topic-arn']
     region = arguments['--region']
     back_channel_name = arguments['--back-channel']
-    crassus.notify_crassus(stack_name, parameters, topic_arn, region)
+    crassus.notify(stack_name, parameters, topic_arn, region)
     back_channel.receive_messages(back_channel_name)
