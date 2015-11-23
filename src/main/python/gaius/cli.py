@@ -12,17 +12,17 @@ Options:
   --back-channel BACK_CHANNEL   The name of the back-channel AWS::SQS from Crassus [default: crassus-output]
 """
 
-from gaius import crassus, back_channel
 from docopt import docopt
 
+from . import back_channel, crassus
 
-def send_message():
+
+def communicate():
     arguments = docopt(__doc__)
     stack_name = arguments['--stack']
     parameters = arguments['--parameters']
     topic_arn = arguments['--topic-arn']
     region = arguments['--region']
     back_channel_name = arguments['--back-channel']
-
-    print crassus.notify_crassus(stack_name, parameters, topic_arn, region)
+    crassus.notify_crassus(stack_name, parameters, topic_arn, region)
     back_channel.receive_messages(back_channel_name)
