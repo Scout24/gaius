@@ -15,12 +15,11 @@ class DeploymentResponse(dict):
     - message: the textual message for the notification.
     """
 
-    version = '1.0'
     STATUS_SUCCESS = 'success'
     STATUS_FAILURE = 'failure'
 
-    def __init__(self, status, message, stack_name):
-        self['version'] = self.version
-        self['stackName'] = stack_name
+    def __init__(self, status, message, stackName, version=1):
+        self['version'] = version
+        self['stackName'] = stackName
         self['status'] = status
         self['message'] = message

@@ -41,7 +41,8 @@ def receive(back_channel_name, poll_interval=10):
     sqs_resource = boto3.resource('sqs')
     queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
     while True:
-        message = queue.receive_messages(MaxNumberOfMessages=1)
-        message_dict = DeploymentResponse(**json.loads(message))
+        outer_message = queue.receive_messages(MaxNumberOfMessages=1)[0].body
+        inner_message = json.loads(outer_message)['Message']
+        message_dict = DeploymentResponse(**json.loads(inner_message))
         print(message_dict)
         sleep(poll_interval)
