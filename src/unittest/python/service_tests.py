@@ -1,11 +1,11 @@
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from unittest import TestCase
-from mock import patch
 
-from gaius.service import parse_parameters, generate_message
+from mock import patch, Mock
+
+from gaius.service import parse_parameters, generate_message, notify
 
 
 class TestParseParameters(TestCase):
@@ -32,3 +32,15 @@ class TestGenerateMessage(TestCase):
                                     'ANY_KEY=ANY_VALUE',
                                     'ANY_REGION')
         self.assertEqual(expected, received)
+
+
+class TestNotify(TestCase):
+
+    @patch('boto3.client')
+    @patch('gaius.service.generate_message', Mock(return_value='MESSAGE'))
+    def test_should_send_sns_message(self, boto3_mock):
+        sns_client_mock = Mock()
+        boto3_mock.return_value = sns_client_mock
+        notify(None, None, 'ANY_ARN', None)
+        sns_client_mock.publish.assert_called_once_with(TopicArn='ANY_ARN',
+                                                        Message='"MESSAGE"')
