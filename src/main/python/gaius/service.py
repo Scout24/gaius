@@ -25,14 +25,17 @@ def notify(stack_name, parameters, topic_arn, region):
     logger.info(json_answer)
 
 
+def parse_parameters(parameters):
+    parameter_list = [x for x in parameters.split(',')]
+    return dict([y.split('=') for y in parameter_list])
+
+
 def generate_message(stack_name, parameters, region, version=1):
     message = {}
     message['version'] = version
     message['stackName'] = stack_name
     message['region'] = region
-    parameter_list = [x for x in parameters.split(',')]
-    parameter_dict = dict([y.split('=') for y in parameter_list])
-    message['parameters'] = parameter_dict
+    message['parameters'] = parse_parameters(parameters)
     return message
 
 
