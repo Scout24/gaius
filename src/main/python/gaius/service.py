@@ -15,7 +15,7 @@ logger = logging.Logger('gaius')
 
 
 def parse_parameters(parameters):
-    """ Parse input parameters from the command line. """
+    """ Parse input parameters from the command line """
     parameter_list = [x for x in parameters.split(',')]
     return dict([y.split('=') for y in parameter_list])
 

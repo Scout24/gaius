@@ -54,8 +54,14 @@ class TestReceive(TestCase):
 
     @mock_sqs
     def test_receive_should_read_message(self):
+        message_body = ('{"Message": "{ ' +
+                        '\\"status\\": \\"UPDATE_IN_PROGRESS\\", ' +
+                        '\\"timestamp\\": \\"2015-11-24T13:14:16.575Z\\", ' +
+                        '\\"stackName\\": \\"my-teststack\\", ' +
+                        '\\"version\\": \\"1.1\\", ' +
+                        '\\"message\\": \\"User Initiated\\", ' +
+                        '\\"emitter\\": \\"cloudformation\\"}"}')
         sqs = boto3.resource('sqs')
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
-        queue.send_message(MessageBody='"MESSAGE"')
+        queue.send_message(MessageBody=message_body)
         receive('BACK_CHANNEL')
-

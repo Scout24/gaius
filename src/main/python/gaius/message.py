@@ -18,8 +18,10 @@ class DeploymentResponse(dict):
     STATUS_SUCCESS = 'success'
     STATUS_FAILURE = 'failure'
 
-    def __init__(self, status, message, stackName, version=1):
-        self['version'] = version
-        self['stackName'] = stackName
+    def __init__(self, status, timestamp, stackName, version, message, emitter):
         self['status'] = status
+        self['timestamp'] = timestamp
+        self['stackName'] = stackName
+        self['version'] = version
         self['message'] = message
+        self['emitter'] = emitter
