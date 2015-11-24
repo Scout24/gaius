@@ -49,3 +49,4 @@ def receive(back_channel_name, poll_interval=10):
         message_dict = DeploymentResponse(**json.loads(inner_message))
         print(message_dict)
         sleep(poll_interval)
+        break

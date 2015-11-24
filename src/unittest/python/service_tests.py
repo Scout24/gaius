@@ -5,7 +5,11 @@ from unittest import TestCase
 
 from mock import patch, Mock
 
-from gaius.service import parse_parameters, generate_message, notify
+import boto3
+
+from moto import mock_sqs
+
+from gaius.service import parse_parameters, generate_message, notify, receive
 
 
 class TestParseParameters(TestCase):
@@ -44,3 +48,14 @@ class TestNotify(TestCase):
         notify(None, None, 'ANY_ARN', None)
         sns_client_mock.publish.assert_called_once_with(TopicArn='ANY_ARN',
                                                         Message='"MESSAGE"')
+
+
+class TestReceive(TestCase):
+
+    @mock_sqs
+    def test_receive_should_read_message(self):
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody='"MESSAGE"')
+        receive('BACK_CHANNEL')
+
