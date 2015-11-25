@@ -3,13 +3,20 @@
 Interface to the Crassus Lambda function. This module notifies Crassus
 about updates to a CFN stack so Crassus will trigger the update process.
 """
+
+import sys
 import json
 import logging
 from time import sleep
 
 import boto3
 
-logger = logging.Logger('gaius')
+logger = logging.getLogger('gaius')
+handler = logging.StreamHandler(stream=sys.stdout)
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.INFO)
 
 
 def parse_parameters(parameters):
@@ -36,7 +43,7 @@ def notify(stack_name, parameters, topic_arn, region):
         TopicArn=topic_arn,
         Message=json.dumps(message),
     )
-    logger.info(json_answer)
+    logger.debug(json_answer)
 
 
 def receive(back_channel_name, poll_interval=2, num_attempts=60):
@@ -52,10 +59,16 @@ def receive(back_channel_name, poll_interval=2, num_attempts=60):
             message = messages[0]
             message_dict = json.loads(message.body)
             message.delete()
-            print(message_dict)
-            if message_dict['status'] in ['UPDATE_COMPLETE', 'failure']:
-                print('Final Crassus/CFN message received')
+            logger.debug(message_dict)
+            logger.info('%s: %s',
+                        message_dict['status'], message_dict['message'])
+            if message_dict['status'] == 'failure':
+                logger.info('Final Crassus message received')
+                return
+            elif (message_dict['status'] == 'UPDATE_COMPLETE' and
+                  message_dict['resourceType'] == 'AWS::CloudFormation::Stack'):
+                logger.info('Final CFN message received')
                 return
             num_attempts = original_num_attempts
         sleep(poll_interval)
-    print('No final CFN message was received')
+    logger.info('No final CFN message was received')
