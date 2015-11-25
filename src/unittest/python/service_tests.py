@@ -57,8 +57,7 @@ class TestReceive(TestCase):
         message_body = ('{"Message": "{ ' +
                         '\\"status\\": \\"UPDATE_IN_PROGRESS\\", ' +
                         '\\"timestamp\\": \\"2015-11-24T13:14:16.575Z\\", ' +
-                        '\\"stackName\\": \\"my-teststack\\", ' +
-                        '\\"version\\": \\"1.1\\", ' +
+                        '\\"stack_name\\": \\"my-teststack\\", ' +
                         '\\"message\\": \\"User Initiated\\", ' +
                         '\\"emitter\\": \\"cloudformation\\"}"}')
         sqs = boto3.resource('sqs')
