@@ -18,6 +18,18 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+FINAL_STATES = [
+    'CREATE_FAILED',
+    'CREATE_COMPLETE',
+    'ROLLBACK_FAILED',
+    'ROLLBACK_COMPLETE',
+    'DELETE_FAILED',
+    'DELETE_COMPLETE',
+    'UPDATE_COMPLETE',
+    'UPDATE_ROLLBACK_FAILED',
+    'UPDATE_ROLLBACK_COMPLETE'
+]
+
 
 def parse_parameters(parameters):
     """ Parse input parameters from the command line """
@@ -65,8 +77,8 @@ def receive(back_channel_name, poll_interval=2, num_attempts=60):
             if message_dict['status'] == 'failure':
                 logger.info('Final Crassus message received')
                 return
-            elif (message_dict['status'] == 'UPDATE_COMPLETE' and
-                  message_dict['resourceType'] == 'AWS::CloudFormation::Stack'):
+            elif (message_dict['resourceType'] == 'AWS::CloudFormation::Stack'
+                  and message_dict['status'] in FINAL_STATES):
                 logger.info('Final CFN message received')
                 return
             num_attempts = original_num_attempts
