@@ -41,7 +41,7 @@ def notify(stack_name, parameters, topic_arn, region):
     logger.info(json_answer)
 
 
-def receive(back_channel_name, poll_interval=2, num_attempts=30):
+def receive(back_channel_name, poll_interval=2, num_attempts=60):
     """Reads out the back-channel on the deployment pipeline"""
     original_num_attempts = num_attempts
     sqs_resource = boto3.resource('sqs')
