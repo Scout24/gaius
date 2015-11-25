@@ -9,8 +9,6 @@ from time import sleep
 
 import boto3
 
-from .message import DeploymentResponse
-
 logger = logging.Logger('gaius')
 
 
