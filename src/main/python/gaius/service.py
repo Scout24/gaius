@@ -41,14 +41,23 @@ def notify(stack_name, parameters, topic_arn, region):
     logger.info(json_answer)
 
 
-def receive(back_channel_name, poll_interval=10):
+def receive(back_channel_name, poll_interval=2, num_attempts=30):
     """Reads out the back-channel on the deployment pipeline"""
+    original_num_attempts = num_attempts
     sqs_resource = boto3.resource('sqs')
     queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
-    while True:
-        outer_message = queue.receive_messages(MaxNumberOfMessages=1)[0].body
-        inner_message = json.loads(outer_message)['Message']
-        message_dict = DeploymentResponse(**json.loads(inner_message))
-        print(message_dict)
+    while num_attempts > 0:
+        messages = queue.receive_messages(MaxNumberOfMessages=1)
+        if not messages:
+            num_attempts -= 1
+        else:
+            message = messages[0]
+            message_dict = json.loads(message.body)
+            message.delete()
+            print(message_dict)
+            if message_dict['status'] in ['UPDATE_COMPLETE', 'failure']:
+                print('Final Crassus/CFN message received')
+                return
+            num_attempts = original_num_attempts
         sleep(poll_interval)
-        break
+    print('No final CFN message was received')
