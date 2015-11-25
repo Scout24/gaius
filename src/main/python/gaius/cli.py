@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Command line client for deploying CFN stacks via crassus
 Usage:
