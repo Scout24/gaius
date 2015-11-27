@@ -26,4 +26,4 @@ def communicate():
     region = arguments['--region']
     back_channel_name = arguments['--back-channel']
     service.notify(stack_name, parameters, topic_arn, region)
-    service.receive(back_channel_name)
+    service.receive(back_channel_name, stack_name)

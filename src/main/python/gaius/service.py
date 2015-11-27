@@ -58,7 +58,16 @@ def notify(stack_name, parameters, topic_arn, region):
     logger.debug(json_answer)
 
 
-def receive(back_channel_name, poll_interval=2, num_attempts=60):
+def is_related_message(message_dict, stack_name):
+    """Checks if StackName belongs to client-session or is  missing"""
+    if message_dict.get('stackName') == stack_name:
+        return True
+    elif message_dict.get('stackName') is None:
+        return True
+    return False
+
+
+def receive(back_channel_name, stack_name, poll_interval=2, num_attempts=60):
     """Reads out the back-channel on the deployment pipeline"""
     original_num_attempts = num_attempts
     sqs_resource = boto3.resource('sqs')
@@ -70,14 +79,20 @@ def receive(back_channel_name, poll_interval=2, num_attempts=60):
         else:
             message = messages[0]
             message_dict = json.loads(message.body)
-            message.delete()
+            if is_related_message(message_dict, stack_name):
+                message.delete()
+            else:
+                message.change_visibility(VisibilityTimeout=0)
+                num_attempts -= 1
+                sleep(poll_interval)
+                continue
             logger.debug(message_dict)
             logger.info('%s: %s',
                         message_dict['status'], message_dict['message'])
             if message_dict['status'] == 'failure':
                 logger.info('Final Crassus message received')
                 return
-            elif (message_dict['resourceType'] == 'AWS::CloudFormation::Stack'
+            elif (message_dict.get('resourceType') == 'AWS::CloudFormation::Stack'
                   and message_dict['status'] in FINAL_STATES):
                 logger.info('Final CFN message received')
                 return
