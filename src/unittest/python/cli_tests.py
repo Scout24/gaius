@@ -25,4 +25,4 @@ class CliTests(TestCase):
         mock_notify.assert_called_once_with('mystack',
                                             'parameter1=value1,parameter2=value2',
                                             'my::topic::arn', 'eu-west-1')
-        mock_receive.assert_called_once_with('crassus-output')
+        mock_receive.assert_called_once_with('crassus-output', 'mystack')

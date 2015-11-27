@@ -9,7 +9,11 @@ import boto3
 
 from moto import mock_sqs
 
-from gaius.service import parse_parameters, generate_message, notify, receive
+from gaius.service import (parse_parameters,
+                           generate_message,
+                           notify,
+                           receive,
+                           is_related_message)
 
 
 class TestParseParameters(TestCase):
@@ -52,15 +56,59 @@ class TestNotify(TestCase):
 
 class TestReceive(TestCase):
 
+    @patch('gaius.service.is_related_message')
     @mock_sqs
-    def test_receive_should_read_message(self):
-        message_body = ('{"Message": "{ ' +
-                        '\\"status\\": \\"UPDATE_IN_PROGRESS\\", ' +
-                        '\\"timestamp\\": \\"2015-11-24T13:14:16.575Z\\", ' +
-                        '\\"stack_name\\": \\"my-teststack\\", ' +
-                        '\\"message\\": \\"User Initiated\\", ' +
-                        '\\"emitter\\": \\"cloudformation\\"}"}')
+    def test_receive_should_read_message_and_process(self, mock_rel_massage):
+        message_body = ('{ ' +
+                        '"status": "UPDATE_IN_PROGRESS", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stack_name": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation"}')
         sqs = boto3.resource('sqs')
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
-        receive('BACK_CHANNEL')
+        mock_rel_massage.return_value = False
+        receive('BACK_CHANNEL', 'my-another-teststack',
+                poll_interval=1, num_attempts=1)
+        mock_rel_massage.return_value = True
+        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+
+    @patch('gaius.service.is_related_message')
+    @mock_sqs
+    def test_receive_should_react_on_final_massage(self, mock_rel_massage):
+        message_body = ('{ ' +
+                        '"status": "UPDATE_COMPLETE", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stack_name": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        mock_rel_massage.return_value = True
+        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+
+    @patch('gaius.service.is_related_message')
+    @mock_sqs
+    def test_receive_should_log_error_massage(self, mock_rel_massage):
+        message_body = ('{ ' +
+                        '"status": "failure", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stack_name": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        mock_rel_massage.return_value = True
+        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+
+    def test_check_if_message_related(self):
+        self.assertTrue(is_related_message({'stackName': 'TestStack'},
+                                           'TestStack'))
+        self.assertFalse(is_related_message({'stackName': 'TestStack'},
+                                            'AnotherTestStack'))
+        self.assertTrue(is_related_message({}, 'AnotherTestStack'))
