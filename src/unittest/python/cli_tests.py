@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase
+from unittest2 import TestCase
 from mock import patch
 import sys
 from gaius import cli
