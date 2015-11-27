@@ -31,12 +31,9 @@ default_task = "publish"
 def set_properties(project):
     project.depends_on("boto3")
     project.depends_on("docopt")
-    if sys.version_info[0:2] < (2, 7):
-        project.depends_on("ordereddict")
-    project.build_depends_on("unittest2")
     project.build_depends_on("mock")
     project.build_depends_on("moto")
-    project.build_depends_on("mockito-without-hardcoded-distribute-version")
+    project.build_depends_on("unittest2")
     project.set_property("coverage_threshold_warn", 70)
     project.set_property("coverage_branch_threshold_warn", 80)
     project.set_property("coverage_branch_partial_threshold_warn", 80)

@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-
-from gaius.cli import send_message
+from gaius.cli import communicate
 
 if __name__ == '__main__':
-    try:
-        send_message()
-    except KeyboardInterrupt:
-        sys.exit(0)
+    communicate()
