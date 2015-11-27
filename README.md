@@ -15,4 +15,5 @@ Options:
   --parameters PARAMETERS  Parameters in format key=value[,key=value]
   --topic-arn ARN  The ARN of the notify topic
   --region REGION  the region to deploy in [default: eu-west-1]
+  --back-channel BACK_CHANNEL   The name of the back-channel AWS::SQS from Crassus [default: crassus-output]
 ```
