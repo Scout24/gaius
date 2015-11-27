@@ -33,6 +33,7 @@ def set_properties(project):
     project.depends_on("docopt")
     project.build_depends_on("mock")
     project.build_depends_on("moto")
+    project.build_depends_on("unittest2")
     project.set_property("coverage_threshold_warn", 70)
     project.set_property("coverage_branch_threshold_warn", 80)
     project.set_property("coverage_branch_partial_threshold_warn", 80)

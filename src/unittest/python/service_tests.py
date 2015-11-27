@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase
+from unittest2 import TestCase
 
 from mock import patch, Mock
 
@@ -95,6 +95,25 @@ class TestReceive(TestCase):
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
+    def test_receive_should_fail_on_cfn_error_massage(self, mock_rel_massage):
+        message_body = ('{ ' +
+                        '"status": "CREATE_FAILED", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stack_name": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        mock_rel_massage.return_value = True
+        with self.assertRaisesRegexp(DeploymentErrorException,
+            'Crassus failed with "User Initiated"'):
+            receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
+                    poll_interval=1, num_attempts=1)
+
+    @patch('gaius.service.is_related_message')
+    @mock_sqs
     def test_receive_should_log_error_massage(self, mock_rel_massage):
         message_body = ('{ ' +
                         '"status": "failure", ' +
@@ -108,7 +127,7 @@ class TestReceive(TestCase):
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
         with self.assertRaisesRegexp(DeploymentErrorException,
-            'Crassus failed with "User Initiated"'):
+                                     'Crassus failed with "User Initiated"'):
             receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
                     poll_interval=1, num_attempts=1)
 

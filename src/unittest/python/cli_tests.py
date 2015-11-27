@@ -3,8 +3,9 @@
 
 from unittest import TestCase
 from mock import patch
-
+import sys
 from gaius import cli
+from gaius.service import DeploymentErrorException
 
 
 class CliTests(TestCase):
@@ -25,4 +26,16 @@ class CliTests(TestCase):
         mock_notify.assert_called_once_with('mystack',
                                             'parameter1=value1,parameter2=value2',
                                             'my::topic::arn', 'eu-west-1')
-        mock_receive.assert_called_once_with('crassus-output', 'mystack', 'eu-west-1')
+        mock_receive.assert_called_once_with(
+            'crassus-output', 'mystack', 'eu-west-1')
+
+    @patch('gaius.service.receive')
+    @patch('gaius.service.notify')
+    @patch('gaius.cli.docopt')
+    def test_should_fail_with_error(self, mock_docopt, mock_notify, mock_receive):
+        """
+        sys.exit in cli throws SystemExit. We catched that.
+        """
+        mock_receive.side_effect = DeploymentErrorException
+        with self.assertRaises(SystemExit):
+            cli.communicate()

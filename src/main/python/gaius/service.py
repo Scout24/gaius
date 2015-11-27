@@ -96,23 +96,21 @@ def receive(back_channel_name, stack_name, region,
 
 
 def validate_message(message_dict):
+    message_status = message_dict.get('status')
+    message_payload = message_dict.get('message')
+    message_rtype = message_dict.get('resourceType')
     logger.debug(message_dict)
     logger.info('%s: %s: %s',
-                message_dict['status'],
-                message_dict.get('resourceType'),
-                message_dict['message'])
-    if message_dict['status'] == 'failure':
-        print message_dict['message']
+                message_status, message_rtype, message_payload)
+    if message_status == 'failure':
         raise DeploymentErrorException(
-            'Crassus failed with "{0}"'.format(message_dict['message']))
-    elif (message_dict.get('resourceType') ==
-          'AWS::CloudFormation::Stack' and
-          message_dict['status'] in ERROR_STATES):
+            'Crassus failed with "{0}"'.format(message_payload))
+    elif (message_rtype ==
+          'AWS::CloudFormation::Stack' and message_status in ERROR_STATES):
         raise DeploymentErrorException(
-            'Crassus failed with "{0}"'.format(message_dict['message']))
-    elif (message_dict.get('resourceType') ==
-          'AWS::CloudFormation::Stack' and
-          message_dict['status'] in FINAL_STATES):
+            'Crassus failed with "{0}"'.format(message_payload))
+    elif (message_rtype ==
+          'AWS::CloudFormation::Stack' and message_status in FINAL_STATES):
         logger.info('Final CFN message received')
         return
 

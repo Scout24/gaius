@@ -14,7 +14,7 @@ Options:
   --back-channel BACK_CHANNEL   The name of the back-channel AWS::SQS
                                 from Crassus [default: crassus-output]
 """
-import sys
+import sys as mysys
 from docopt import docopt
 
 from . import service
@@ -31,4 +31,4 @@ def communicate():
     try:
         service.receive(back_channel_name, stack_name, region)
     except service.DeploymentErrorException:
-        sys.exit(-1)
+        mysys.exit(-1)
