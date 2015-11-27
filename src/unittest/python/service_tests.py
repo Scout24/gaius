@@ -13,7 +13,8 @@ from gaius.service import (parse_parameters,
                            generate_message,
                            notify,
                            receive,
-                           is_related_message)
+                           is_related_message,
+                           DeploymentErrorException)
 
 
 class TestParseParameters(TestCase):
@@ -106,8 +107,10 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
-                poll_interval=1, num_attempts=1)
+        with self.assertRaisesRegexp(DeploymentErrorException,
+            'Crassus failed with "User Initiated"'):
+            receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
+                    poll_interval=1, num_attempts=1)
 
     def test_check_if_message_related(self):
         self.assertTrue(is_related_message({'stackName': 'TestStack'},

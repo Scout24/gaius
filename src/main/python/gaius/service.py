@@ -19,15 +19,18 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 FINAL_STATES = [
-    'CREATE_FAILED',
     'CREATE_COMPLETE',
-    'ROLLBACK_FAILED',
     'ROLLBACK_COMPLETE',
-    'DELETE_FAILED',
     'DELETE_COMPLETE',
     'UPDATE_COMPLETE',
-    'UPDATE_ROLLBACK_FAILED',
     'UPDATE_ROLLBACK_COMPLETE'
+]
+
+ERROR_STATES = [
+    'CREATE_FAILED',
+    'ROLLBACK_FAILED',
+    'DELETE_FAILED',
+    'UPDATE_ROLLBACK_FAILED'
 ]
 
 
@@ -67,7 +70,8 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def receive(back_channel_name, stack_name, region, poll_interval=2, num_attempts=60):
+def receive(back_channel_name, stack_name, region,
+            poll_interval=2, num_attempts=60):
     """Reads out the back-channel on the deployment pipeline"""
     original_num_attempts = num_attempts
     sqs_resource = boto3.resource('sqs', region_name=region)
@@ -76,28 +80,42 @@ def receive(back_channel_name, stack_name, region, poll_interval=2, num_attempts
         messages = queue.receive_messages(MaxNumberOfMessages=1)
         if not messages:
             num_attempts -= 1
+            continue
+
+        message = messages[0]
+        message_dict = json.loads(message.body)
+        if not is_related_message(message_dict, stack_name):
+            message.change_visibility(VisibilityTimeout=0)
+            num_attempts -= 1
         else:
-            message = messages[0]
-            message_dict = json.loads(message.body)
-            if is_related_message(message_dict, stack_name):
-                message.delete()
-            else:
-                message.change_visibility(VisibilityTimeout=0)
-                num_attempts -= 1
-                sleep(poll_interval)
-                continue
-            logger.debug(message_dict)
-            logger.info('%s: %s: %s',
-                        message_dict['status'],
-                        message_dict.get('resourceType'),
-                        message_dict['message'])
-            if message_dict['status'] == 'failure':
-                logger.error('Final Crassus message received')
-                return
-            elif (message_dict.get('resourceType') == 'AWS::CloudFormation::Stack'
-                  and message_dict['status'] in FINAL_STATES):
-                logger.info('Final CFN message received')
-                return
+            message.delete()
+            validate_message(message_dict)
             num_attempts = original_num_attempts
         sleep(poll_interval)
     logger.info('No final CFN message was received')
+
+
+def validate_message(message_dict):
+    logger.debug(message_dict)
+    logger.info('%s: %s: %s',
+                message_dict['status'],
+                message_dict.get('resourceType'),
+                message_dict['message'])
+    if message_dict['status'] == 'failure':
+        print message_dict['message']
+        raise DeploymentErrorException(
+            'Crassus failed with "{0}"'.format(message_dict['message']))
+    elif (message_dict.get('resourceType') ==
+          'AWS::CloudFormation::Stack' and
+          message_dict['status'] in ERROR_STATES):
+        raise DeploymentErrorException(
+            'Crassus failed with "{0}"'.format(message_dict['message']))
+    elif (message_dict.get('resourceType') ==
+          'AWS::CloudFormation::Stack' and
+          message_dict['status'] in FINAL_STATES):
+        logger.info('Final CFN message received')
+        return
+
+
+class DeploymentErrorException(Exception):
+    pass
