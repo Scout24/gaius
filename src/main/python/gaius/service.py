@@ -87,8 +87,10 @@ def receive(back_channel_name, stack_name, region, poll_interval=2, num_attempts
                 sleep(poll_interval)
                 continue
             logger.debug(message_dict)
-            logger.info('%s: %s',
-                        message_dict['status'], message_dict['message'])
+            logger.info('%s: %s: %s',
+                        message_dict['status'],
+                        message_dict.get('resourceType'),
+                        message_dict['message'])
             if message_dict['status'] == 'failure':
                 logger.error('Final Crassus message received')
                 return
