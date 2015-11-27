@@ -1,5 +1,4 @@
 import os
-import sys
 
 from pybuilder.core import init, use_plugin
 from pybuilder.vcs import VCSRevision
