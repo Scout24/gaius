@@ -13,7 +13,7 @@ install:
 env:
   - AWS_DEFAULT_REGION=eu-west-1
 
-script: "pyb verify analyze"
+script: "pyb -v verify analyze"
 
 after_success:
   - coveralls --verbose
