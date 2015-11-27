@@ -67,10 +67,10 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def receive(back_channel_name, stack_name, poll_interval=2, num_attempts=60):
+def receive(back_channel_name, stack_name, region, poll_interval=2, num_attempts=60):
     """Reads out the back-channel on the deployment pipeline"""
     original_num_attempts = num_attempts
-    sqs_resource = boto3.resource('sqs')
+    sqs_resource = boto3.resource('sqs', region_name=region)
     queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
     while num_attempts > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=1)
