@@ -9,6 +9,9 @@ install:
   - pip install pybuilder
   - pip install coveralls
   - pyb install_dependencies
+  
+env:
+  - AWS_DEFAULT_REGION=eu-west-1
 
 script: "pyb verify analyze"
 
