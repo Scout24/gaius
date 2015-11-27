@@ -90,7 +90,7 @@ def receive(back_channel_name, stack_name, region, poll_interval=2, num_attempts
             logger.info('%s: %s',
                         message_dict['status'], message_dict['message'])
             if message_dict['status'] == 'failure':
-                logger.info('Final Crassus message received')
+                logger.error('Final Crassus message received')
                 return
             elif (message_dict.get('resourceType') == 'AWS::CloudFormation::Stack'
                   and message_dict['status'] in FINAL_STATES):
