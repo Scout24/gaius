@@ -69,10 +69,11 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = False
-        receive('BACK_CHANNEL', 'my-another-teststack',
+        receive('BACK_CHANNEL', 'my-another-teststack', 'eu-west-1',
                 poll_interval=1, num_attempts=1)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
+                poll_interval=1, num_attempts=1)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
@@ -88,7 +89,8 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
+                poll_interval=1, num_attempts=1)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
@@ -104,7 +106,8 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', poll_interval=1, num_attempts=1)
+        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
+                poll_interval=1, num_attempts=1)
 
     def test_check_if_message_related(self):
         self.assertTrue(is_related_message({'stackName': 'TestStack'},
