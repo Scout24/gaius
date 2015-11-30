@@ -70,49 +70,47 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def receive(back_channel_name, stack_name, region,
-            poll_interval=2, num_attempts=60):
+def receive(back_channel_name, timeout,  stack_name, region,
+            poll_interval=2):
     """Reads out the back-channel on the deployment pipeline"""
-    original_num_attempts = num_attempts
     sqs_resource = boto3.resource('sqs', region_name=region)
     queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
-    while num_attempts > 0:
+    timeout_orig = timeout
+    while timeout > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=1)
-        if not messages:
-            num_attempts -= 1
-            continue
-
-        message = messages[0]
-        message_dict = json.loads(message.body)
-        if not is_related_message(message_dict, stack_name):
-            message.change_visibility(VisibilityTimeout=0)
-            num_attempts -= 1
-        else:
-            message.delete()
-            validate_message(message_dict)
-            num_attempts = original_num_attempts
+        if messages:
+            message = messages[0]
+            if process_message(message, stack_name):
+                return
+        timeout -= poll_interval
         sleep(poll_interval)
-    logger.info('No final CFN message was received')
+    logger.info('No final CFN message was received after {0} seconds'
+                .format(timeout_orig))
 
 
-def validate_message(message_dict):
+def process_message(message, stack_name):
+    message_dict = json.loads(message.body)
     message_status = message_dict.get('status')
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
     logger.debug(message_dict)
     logger.info('%s: %s: %s',
                 message_status, message_rtype, message_payload)
-    if message_status == 'failure':
-        raise DeploymentErrorException(
-            'Crassus failed with "{0}"'.format(message_payload))
-    elif (message_rtype ==
-          'AWS::CloudFormation::Stack' and message_status in ERROR_STATES):
-        raise DeploymentErrorException(
-            'Crassus failed with "{0}"'.format(message_payload))
-    elif (message_rtype ==
-          'AWS::CloudFormation::Stack' and message_status in FINAL_STATES):
-        logger.info('Final CFN message received')
-        return
+    if not is_related_message(message_dict, stack_name):
+        message.change_visibility(VisibilityTimeout=0)
+    else:
+        message.delete()
+        if message_status == 'failure':
+            raise DeploymentErrorException(
+                'Crassus failed with "{0}"'.format(message_payload))
+        elif (message_rtype ==
+              'AWS::CloudFormation::Stack' and message_status in ERROR_STATES):
+            raise DeploymentErrorException(
+                'Crassus failed with "{0}"'.format(message_payload))
+        elif (message_rtype ==
+              'AWS::CloudFormation::Stack' and message_status in FINAL_STATES):
+            logger.info('Final CFN message received')
+            return True
 
 
 class DeploymentErrorException(Exception):

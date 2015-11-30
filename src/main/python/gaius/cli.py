@@ -3,7 +3,7 @@
 Command line client for deploying CFN stacks via crassus
 Usage:
     gaius --stack STACK --parameters PARAMETERS --topic-arn ARN
-         [--region REGION] [--back-channel BACK_CHANNEL]
+         [--region REGION] [--back-channel BACK_CHANNEL] [--timeout TIMEOUT]
 
 Options:
   -h --help                     Show this
@@ -13,6 +13,9 @@ Options:
   --region REGION               The region to deploy in [default: eu-west-1]
   --back-channel BACK_CHANNEL   The name of the back-channel AWS::SQS
                                 from Crassus [default: crassus-output]
+  --timeout TIMEOUT             Timeout in seconds after that gaius stops
+                                polling on back channel and returns
+                                [default: 600]
 """
 import sys
 from docopt import docopt
@@ -27,8 +30,9 @@ def communicate():
     topic_arn = arguments['--topic-arn']
     region = arguments['--region']
     back_channel_name = arguments['--back-channel']
+    timeout = int(arguments['--timeout'])
     service.notify(stack_name, parameters, topic_arn, region)
     try:
-        service.receive(back_channel_name, stack_name, region)
+        service.receive(back_channel_name, timeout, stack_name, region)
     except service.DeploymentErrorException:
         sys.exit(-1)
