@@ -55,8 +55,8 @@ class TestNotify(TestCase):
                                                         Message='"MESSAGE"')
 
 
-
 class TestReceive(TestCase):
+
     @patch('gaius.service.is_related_message')
     @mock_sqs
     def test_receive_should_read_message_and_process(self, mock_rel_message):
@@ -67,6 +67,7 @@ class TestReceive(TestCase):
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation"}')
         sqs = boto3.resource('sqs')
+        print 'SQS MOCK:', sqs
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
 
@@ -109,8 +110,8 @@ class TestReceive(TestCase):
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
         with self.assertRaisesRegexp(DeploymentErrorException,
-            'Crassus failed with "User Initiated"'):
-            receive('BACK_CHANNEL', 600,'my-teststack', 'eu-west-1',
+                                     'Crassus failed with "User Initiated"'):
+            receive('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1',
                     poll_interval=1)
 
     @patch('gaius.service.is_related_message')
@@ -127,8 +128,9 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        with self.assertRaisesRegexp(DeploymentErrorException,
-                                     'Crassus failed with "User Initiated"'):
+        with self.assertRaisesRegexp(
+                DeploymentErrorException,
+                'Crassus failed with "User Initiated"'):
             receive('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1',
                     poll_interval=1)
 
