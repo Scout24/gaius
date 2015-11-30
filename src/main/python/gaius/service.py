@@ -12,11 +12,6 @@ from time import sleep
 import boto3
 
 logger = logging.getLogger('gaius')
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
 
 FINAL_STATES = [
     'CREATE_COMPLETE',
@@ -114,4 +109,9 @@ def process_message(message, stack_name):
 
 
 class DeploymentErrorException(Exception):
-    pass
+
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message

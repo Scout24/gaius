@@ -16,7 +16,7 @@ class CliTests(TestCase):
         parameters = {
             '--stack': 'mystack',
             '--parameters': 'parameter1=value1,parameter2=value2',
-            '--topic-arn': 'my::topic::arn',
+            '--trigger-channel': 'my::topic::arn',
             '--region': 'eu-west-1',
             '--back-channel': 'crassus-output',
             '--timeout': '600'
@@ -38,6 +38,6 @@ class CliTests(TestCase):
         """
         sys.exit in cli throws SystemExit. We catched that.
         """
-        mock_receive.side_effect = DeploymentErrorException
+        mock_receive.side_effect = DeploymentErrorException("failed")
         with self.assertRaises(SystemExit):
             cli.communicate()

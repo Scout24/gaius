@@ -69,12 +69,12 @@ class TestReceive(TestCase):
         sqs = boto3.resource('sqs')
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
-        
+
         mock_rel_message.return_value = False
-        receive('BACK_CHANNEL', 5, 'my-another-teststack', 'eu-west-1',
+        receive('BACK_CHANNEL', 1, 'my-another-teststack', 'eu-west-1',
                 poll_interval=1)
 
-        receive('BACK_CHANNEL', 5, 'my-teststack', 'eu-west-1',
+        receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
                 poll_interval=1)
 
     @patch('gaius.service.is_related_message')
