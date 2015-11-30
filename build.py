@@ -50,9 +50,3 @@ def set_properties(project):
 
     project.version = '%s.%s' % (project.version,
                                  os.environ.get('BUILD_NUMBER', 0))
-    os.environ['http_proxy'] = ''
-    os.environ['https_proxy'] = ''
-    os.environ['no_proxy'] = ''
-    os.environ['HTTP_PROXY'] = ''
-    os.environ['HTTPS_PROXY'] = ''
-    os.environ['NO_PROXY'] = ''
