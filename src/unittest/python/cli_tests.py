@@ -18,7 +18,8 @@ class CliTests(TestCase):
             '--parameters': 'parameter1=value1,parameter2=value2',
             '--topic-arn': 'my::topic::arn',
             '--region': 'eu-west-1',
-            '--back-channel': 'crassus-output'
+            '--back-channel': 'crassus-output',
+            '--timeout': '600'
         }
         mock_docopt.return_value = parameters
         cli.communicate()
@@ -27,7 +28,7 @@ class CliTests(TestCase):
             'parameter1=value1,parameter2=value2',
             'my::topic::arn', 'eu-west-1')
         mock_receive.assert_called_once_with(
-            'crassus-output', 'mystack', 'eu-west-1')
+            'crassus-output', 600, 'mystack', 'eu-west-1')
 
     @patch('gaius.service.receive')
     @patch('gaius.service.notify')

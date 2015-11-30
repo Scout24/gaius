@@ -55,11 +55,11 @@ class TestNotify(TestCase):
                                                         Message='"MESSAGE"')
 
 
-class TestReceive(TestCase):
 
+class TestReceive(TestCase):
     @patch('gaius.service.is_related_message')
     @mock_sqs
-    def test_receive_should_read_message_and_process(self, mock_rel_massage):
+    def test_receive_should_read_message_and_process(self, mock_rel_message):
         message_body = ('{ ' +
                         '"status": "UPDATE_IN_PROGRESS", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
@@ -69,12 +69,13 @@ class TestReceive(TestCase):
         sqs = boto3.resource('sqs')
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
-        mock_rel_massage.return_value = False
-        receive('BACK_CHANNEL', 'my-another-teststack', 'eu-west-1',
-                poll_interval=1, num_attempts=1)
-        mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
-                poll_interval=1, num_attempts=1)
+        
+        mock_rel_message.return_value = False
+        receive('BACK_CHANNEL', 5, 'my-another-teststack', 'eu-west-1',
+                poll_interval=1)
+
+        receive('BACK_CHANNEL', 5, 'my-teststack', 'eu-west-1',
+                poll_interval=1)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
@@ -90,8 +91,8 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
-                poll_interval=1, num_attempts=1)
+        receive('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1',
+                poll_interval=1)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
@@ -109,8 +110,8 @@ class TestReceive(TestCase):
         mock_rel_massage.return_value = True
         with self.assertRaisesRegexp(DeploymentErrorException,
             'Crassus failed with "User Initiated"'):
-            receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
-                    poll_interval=1, num_attempts=1)
+            receive('BACK_CHANNEL', 600,'my-teststack', 'eu-west-1',
+                    poll_interval=1)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
@@ -128,8 +129,8 @@ class TestReceive(TestCase):
         mock_rel_massage.return_value = True
         with self.assertRaisesRegexp(DeploymentErrorException,
                                      'Crassus failed with "User Initiated"'):
-            receive('BACK_CHANNEL', 'my-teststack', 'eu-west-1',
-                    poll_interval=1, num_attempts=1)
+            receive('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1',
+                    poll_interval=1)
 
     def test_check_if_message_related(self):
         self.assertTrue(is_related_message({'stackName': 'TestStack'},
