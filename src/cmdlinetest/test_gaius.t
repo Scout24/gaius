@@ -9,7 +9,7 @@
   Command line client for deploying CFN stacks via crassus
   Usage:
       gaius --stack STACK --parameters PARAMETERS --topic-arn ARN
-           [--region REGION] [--back-channel BACK_CHANNEL]
+           [--region REGION] [--back-channel BACK_CHANNEL] [--timeout TIMEOUT]
   
   Options:
     -h --help                     Show this
@@ -19,10 +19,13 @@
     --region REGION               The region to deploy in [default: eu-west-1]
     --back-channel BACK_CHANNEL   The name of the back-channel AWS::SQS
                                   from Crassus [default: crassus-output]
+    --timeout TIMEOUT             Timeout in seconds after that gaius stops
+                                  polling on back channel and returns
+                                  [default: 600]
 # Test failing @ wrong parametrization
 
   $ gaius --stack some_stack --topic-arn arn:aws:sns:eu-west-1::topic
   Usage:
       gaius --stack STACK --parameters PARAMETERS --topic-arn ARN
-           [--region REGION] [--back-channel BACK_CHANNEL]
+           [--region REGION] [--back-channel BACK_CHANNEL] [--timeout TIMEOUT]
   [1]
