@@ -67,7 +67,6 @@ class TestReceive(TestCase):
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation"}')
         sqs = boto3.resource('sqs')
-        print 'SQS MOCK:', sqs
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
 
@@ -77,6 +76,7 @@ class TestReceive(TestCase):
 
         receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
                 poll_interval=1)
+        # self.assertTrue(False)
 
     @patch('gaius.service.is_related_message')
     @mock_sqs
