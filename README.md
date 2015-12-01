@@ -22,3 +22,9 @@ Options:
                                 polling on back channel and returns
                                 [default: 600]
 ```
+
+# Important
+
+You've been warned: `gaius` is not built to handle parallel executions
+on the same stack! So if you execute it on the same stack at the same
+time, expect it to behave weird.
