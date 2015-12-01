@@ -4,9 +4,10 @@ Interface to the Crassus Lambda function. This module notifies Crassus
 about updates to a CFN stack so Crassus will trigger the update process.
 """
 
-import sys
 import json
 import logging
+from datetime import datetime
+from dateutil import tz, parser as date_parser
 from time import sleep
 
 import boto3
@@ -68,19 +69,50 @@ def is_related_message(message_dict, stack_name):
 def receive(back_channel_url, timeout,  stack_name, region,
             poll_interval=2):
     """Reads out the back-channel on the deployment pipeline"""
+    timeout_orig = timeout
     sqs_resource = boto3.resource('sqs', region_name=region)
     queue = sqs_resource.Queue(url=back_channel_url)
-    timeout_orig = timeout
     while timeout > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=1)
-        if messages:
-            message = messages[0]
+        for message in messages:
             if process_message(message, stack_name):
                 return
         timeout -= poll_interval
         sleep(poll_interval)
-    logger.info('No final CFN message was received after {0} seconds'
-                .format(timeout_orig))
+    logger.info('No final CFN message was received after % s seconds',
+                timeout_orig)
+
+
+def cleanup(back_channel_name, timeout,  stack_name, region):
+    """Cleans up old messages on the deployment pipeline"""
+    sqs_resource = boto3.resource('sqs', region_name=region)
+    queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
+
+    while timeout > 0:
+        messages = queue.receive_messages(MaxNumberOfMessages=10)
+        if not messages:
+            break
+        else:
+            for message in messages:
+                cleanup_old_messages(message, stack_name)
+                timeout -= 1
+
+
+
+def cleanup_old_messages(message, stack_name):
+    now = datetime.now(tz=tz.tzutc())
+    message_dict = json.loads(message.body)
+    message_stack_name = message_dict['stackName']
+    message_timestamp = message_dict['timestamp']
+    message_datetime = date_parser.parse(message_timestamp)
+    logger.info(('[CLEANUP] message_datetime: %s, message_timestamp: %s, '
+                 'message_stack_name: %s, stackname: %s'),
+                message_datetime, now, message_stack_name, stack_name)
+    if (message_stack_name == stack_name and
+            message_datetime < now):
+        logger.info('delete message "%s"', message_dict)
+        message.delete()
+        return True
 
 
 def process_message(message, stack_name):
@@ -88,6 +120,7 @@ def process_message(message, stack_name):
     message_status = message_dict.get('status')
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
+
     logger.debug(message_dict)
     logger.info('%s: %s: %s',
                 message_status, message_rtype, message_payload)

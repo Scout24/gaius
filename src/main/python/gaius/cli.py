@@ -31,6 +31,7 @@ handler.setFormatter(logging.Formatter(
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+
 def communicate():
     arguments = docopt(__doc__)
     stack_name = arguments['--stack']
@@ -39,6 +40,9 @@ def communicate():
     region = arguments['--region']
     back_channel_url = arguments['--back-channel']
     timeout = int(arguments['--timeout'])
+
+    service.cleanup(back_channel_url, timeout, stack_name, region)
+
     service.notify(stack_name, parameters, topic_arn, region)
     try:
         service.receive(back_channel_url, timeout, stack_name, region)
