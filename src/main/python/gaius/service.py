@@ -7,7 +7,7 @@ about updates to a CFN stack so Crassus will trigger the update process.
 import json
 import logging
 from datetime import datetime
-from dateutil import tz, parser as date_parser
+from dateutil import tz, parser as datetime_parser
 from time import sleep
 
 import boto3
@@ -88,19 +88,24 @@ def filter_stack_related_messages(messages, stack_name):
                   messages)
 
 
-def cleanup_old_messages(message, stack_name):
-    now = datetime.now(tz=tz.tzutc())
-    message_dict = json.loads(message.body)
+def log_delete_message(message_dict):
     message_status = message_dict.get('status')
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
     message_stack_name = message_dict['stackName']
+    logger.info('%s: %s: %s: %s', message_stack_name,
+                message_status, message_rtype, message_payload)
+
+
+def cleanup_old_messages(message, stack_name):
+    now = datetime.now(tz=tz.tzutc())
+    message_dict = json.loads(message.body)
+    message_stack_name = message_dict['stackName']
     message_timestamp = message_dict['timestamp']
-    message_datetime = date_parser.parse(message_timestamp)
+    message_datetime = datetime_parser.parse(message_timestamp)
     if (message_stack_name == stack_name and
             message_datetime < now):
-        logger.info('%s: %s: %s: %s', message_stack_name,
-                    message_status, message_rtype, message_payload)
+        log_delete_message(message_dict)
         message.delete()
         return True
 
@@ -126,7 +131,6 @@ def receive(back_channel_url, timeout,  stack_name, region,
 
 def process_message(message, stack_name):
     message_dict = json.loads(message.body)
-    message_stack_name = message_dict.get('stackName')
     message_status = message_dict.get('status')
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
@@ -135,8 +139,7 @@ def process_message(message, stack_name):
     if not is_related_message(message_dict, stack_name):
         message.change_visibility(VisibilityTimeout=0)
     else:
-        logger.info('%s: %s: %s: %s', message_stack_name,
-                    message_status, message_rtype, message_payload)
+        log_delete_message(message_dict)
         message.delete()
         if message_status == 'failure':
             raise DeploymentErrorException(

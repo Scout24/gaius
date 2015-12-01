@@ -113,7 +113,7 @@ class TestReceive(TestCase):
         message_body = ('{ ' +
                         '"status": "UPDATE_IN_PROGRESS", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
-                        '"stack_name": "my-teststack", ' +
+                        '"stackName": "my-teststack", ' +
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation"}')
         sqs = boto3.resource('sqs')
@@ -134,7 +134,7 @@ class TestReceive(TestCase):
         message_body = ('{ ' +
                         '"status": "UPDATE_COMPLETE", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
-                        '"stack_name": "my-teststack", ' +
+                        '"stackName": "my-teststack", ' +
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation", ' +
                         '"resourceType": "AWS::CloudFormation::Stack"}')
@@ -151,7 +151,7 @@ class TestReceive(TestCase):
         message_body = ('{ ' +
                         '"status": "CREATE_FAILED", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
-                        '"stack_name": "my-teststack", ' +
+                        '"stackName": "my-teststack", ' +
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation", ' +
                         '"resourceType": "AWS::CloudFormation::Stack"}')
@@ -170,7 +170,7 @@ class TestReceive(TestCase):
         message_body = ('{ ' +
                         '"status": "CREATE_FAILED", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
-                        '"stack_name": "my-teststack", ' +
+                        '"stackName": "my-teststack", ' +
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation", ' +
                         '"resourceType": "foo"}')
@@ -187,7 +187,7 @@ class TestReceive(TestCase):
         message_body = ('{ ' +
                         '"status": "failure", ' +
                         '"timestamp": "2015-11-24T13:14:16.575Z", ' +
-                        '"stack_name": "my-teststack", ' +
+                        '"stackName": "my-teststack", ' +
                         '"message": "User Initiated", ' +
                         '"emitter": "cloudformation", ' +
                         '"resourceType": "AWS::CloudFormation::Stack"}')
