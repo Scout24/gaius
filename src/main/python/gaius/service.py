@@ -84,8 +84,8 @@ def cleanup(back_channel_url, timeout,  stack_name, region):
 
 def filter_stack_related_messages(messages, stack_name):
     return filter(lambda msg:
-        json.loads(msg.body).get('stackName') == stack_name,
-        messages)
+                  json.loads(msg.body).get('stackName') == stack_name,
+                  messages)
 
 
 def cleanup_old_messages(message, stack_name):
@@ -99,10 +99,8 @@ def cleanup_old_messages(message, stack_name):
     message_datetime = date_parser.parse(message_timestamp)
     if (message_stack_name == stack_name and
             message_datetime < now):
-        logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
-                                                message_status,
-                                                message_rtype,
-                                                message_payload))
+        logger.info('%s: %s: %s: %s', message_stack_name,
+                    message_status, message_rtype, message_payload)
         message.delete()
         return True
 
@@ -122,7 +120,7 @@ def receive(back_channel_url, timeout,  stack_name, region,
                 return
         timeout -= poll_interval
         sleep(poll_interval)
-    logger.info('No final CFN message was received after % s seconds',
+    logger.info('No final CFN message was received after %s seconds',
                 timeout_orig)
 
 
@@ -137,10 +135,8 @@ def process_message(message, stack_name):
     if not is_related_message(message_dict, stack_name):
         message.change_visibility(VisibilityTimeout=0)
     else:
-        logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
-                                                message_status,
-                                                message_rtype,
-                                                message_payload))
+        logger.info('%s: %s: %s: %s', message_stack_name,
+                    message_status, message_rtype, message_payload)
         message.delete()
         if message_status == 'failure':
             raise DeploymentErrorException(
