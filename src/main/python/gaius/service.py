@@ -135,13 +135,13 @@ def process_message(message, stack_name):
     message_rtype = message_dict.get('resourceType')
 
     logger.debug(message_dict)
-    logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
-                                            message_status,
-                                            message_rtype,
-                                            message_payload))
     if not is_related_message(message_dict, stack_name):
         message.change_visibility(VisibilityTimeout=0)
     else:
+        logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
+                                                message_status,
+                                                message_rtype,
+                                                message_payload))
         message.delete()
         if message_status == 'failure':
             raise DeploymentErrorException(
