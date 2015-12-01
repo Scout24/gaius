@@ -35,7 +35,6 @@ def parse_parameters(parameters):
     parameter_list = [x for x in parameters.split(',')]
     return dict([y.split('=') for y in parameter_list])
 
-
 def generate_message(stack_name, parameters, region, version=1):
     """ Generate the update notification message """
     message = {}
@@ -44,7 +43,6 @@ def generate_message(stack_name, parameters, region, version=1):
     message['region'] = region
     message['parameters'] = parse_parameters(parameters)
     return message
-
 
 def notify(stack_name, parameters, topic_arn, region):
     """ Sends an update notification to Crassus """
@@ -56,7 +54,6 @@ def notify(stack_name, parameters, topic_arn, region):
     )
     logger.debug(json_answer)
 
-
 def is_related_message(message_dict, stack_name):
     """Checks if StackName belongs to client-session or is  missing"""
     if message_dict.get('stackName') == stack_name:
@@ -65,24 +62,6 @@ def is_related_message(message_dict, stack_name):
         return True
     return False
 
-
-def receive(back_channel_url, timeout,  stack_name, region,
-            poll_interval=2):
-    """Reads out the back-channel on the deployment pipeline"""
-    timeout_orig = timeout
-    sqs_resource = boto3.resource('sqs', region_name=region)
-    queue = sqs_resource.Queue(url=back_channel_url)
-    while timeout > 0:
-        messages = queue.receive_messages(MaxNumberOfMessages=1)
-        for message in messages:
-            if process_message(message, stack_name):
-                return
-        timeout -= poll_interval
-        sleep(poll_interval)
-    logger.info('No final CFN message was received after % s seconds',
-                timeout_orig)
-
-
 def cleanup(back_channel_name, timeout,  stack_name, region):
     """Cleans up old messages on the deployment pipeline"""
     sqs_resource = boto3.resource('sqs', region_name=region)
@@ -90,6 +69,7 @@ def cleanup(back_channel_name, timeout,  stack_name, region):
 
     while timeout > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=10)
+        messages = filter_stack_related_messages(messages, stack_name)
         if not messages:
             break
         else:
@@ -97,7 +77,10 @@ def cleanup(back_channel_name, timeout,  stack_name, region):
                 cleanup_old_messages(message, stack_name)
                 timeout -= 1
 
-
+def filter_stack_related_messages(messages, stack_name):
+    return filter(lambda msg:
+        json.loads(msg.body).get('stackName') == stack_name,
+        messages)
 
 def cleanup_old_messages(message, stack_name):
     now = datetime.now(tz=tz.tzutc())
@@ -114,6 +97,21 @@ def cleanup_old_messages(message, stack_name):
         message.delete()
         return True
 
+def receive(back_channel_url, timeout,  stack_name, region,
+            poll_interval=2):
+    """Reads out the back-channel on the deployment pipeline"""
+    timeout_orig = timeout
+    sqs_resource = boto3.resource('sqs', region_name=region)
+    queue = sqs_resource.Queue(url=back_channel_url)
+    while timeout > 0:
+        messages = queue.receive_messages(MaxNumberOfMessages=1)
+        for message in messages:
+            if process_message(message, stack_name):
+                return
+        timeout -= poll_interval
+        sleep(poll_interval)
+    logger.info('No final CFN message was received after % s seconds',
+                timeout_orig)
 
 def process_message(message, stack_name):
     message_dict = json.loads(message.body)
