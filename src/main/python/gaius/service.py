@@ -97,13 +97,12 @@ def cleanup_old_messages(message, stack_name):
     message_stack_name = message_dict['stackName']
     message_timestamp = message_dict['timestamp']
     message_datetime = date_parser.parse(message_timestamp)
-    logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
-                                            message_status,
-                                            message_rtype,
-                                            message_payload))
     if (message_stack_name == stack_name and
             message_datetime < now):
-        logger.info('delete message "%s"', message_dict)
+        logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
+                                                message_status,
+                                                message_rtype,
+                                                message_payload))
         message.delete()
         return True
 
