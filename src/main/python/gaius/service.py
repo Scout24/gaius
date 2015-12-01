@@ -123,13 +123,16 @@ def receive(back_channel_url, timeout,  stack_name, region,
 
 def process_message(message, stack_name):
     message_dict = json.loads(message.body)
+    message_stack_name = message_dict.get('stackName')
     message_status = message_dict.get('status')
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
 
     logger.debug(message_dict)
-    logger.info('%s: %s: %s',
-                message_status, message_rtype, message_payload)
+    logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
+                                            message_status,
+                                            message_rtype,
+                                            message_payload))
     if not is_related_message(message_dict, stack_name):
         message.change_visibility(VisibilityTimeout=0)
     else:
