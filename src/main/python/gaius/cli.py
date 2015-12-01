@@ -3,7 +3,7 @@
 Command line client for deploying CFN stacks via crassus
 Usage:
     gaius --stack STACK --parameters PARAMETERS --trigger-channel TOPIC_ARN
-         [--region REGION] [--back-channel SQS_NAME] [--timeout TIMEOUT]
+         [--region REGION] --back-channel QUEUE_URL [--timeout TIMEOUT]
 
 Options:
   -h --help                     Show this
@@ -11,8 +11,8 @@ Options:
   --parameters PARAMETERS       Parameters in format key=value[,key=value]
   --trigger-channel TOPIC_ARN   The ARN of the notify topic
   --region REGION               The region to deploy in [default: eu-west-1]
-  --back-channel SQS_NAME       The name of the back-channel AWS::SQS
-                                from Crassus [default: crassus-output]
+  --back-channel QUEUE_URL      The URL of the back-channel AWS::SQS
+                                from Crassus
   --timeout TIMEOUT             Timeout in seconds after that gaius stops
                                 polling on back channel and returns
                                 [default: 600]
@@ -37,11 +37,11 @@ def communicate():
     parameters = arguments['--parameters']
     topic_arn = arguments['--trigger-channel']
     region = arguments['--region']
-    back_channel_name = arguments['--back-channel']
+    back_channel_url = arguments['--back-channel']
     timeout = int(arguments['--timeout'])
     service.notify(stack_name, parameters, topic_arn, region)
     try:
-        service.receive(back_channel_name, timeout, stack_name, region)
+        service.receive(back_channel_url, timeout, stack_name, region)
     except service.DeploymentErrorException as ex:
         logger.warn("Error occured during deployment: %s", ex)
         sys.exit(1)

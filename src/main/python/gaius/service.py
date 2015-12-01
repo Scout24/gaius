@@ -65,11 +65,11 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def receive(back_channel_name, timeout,  stack_name, region,
+def receive(back_channel_url, timeout,  stack_name, region,
             poll_interval=2):
     """Reads out the back-channel on the deployment pipeline"""
     sqs_resource = boto3.resource('sqs', region_name=region)
-    queue = sqs_resource.get_queue_by_name(QueueName=back_channel_name)
+    queue = sqs_resource.Queue(url=back_channel_url)
     timeout_orig = timeout
     while timeout > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=1)
