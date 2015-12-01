@@ -91,12 +91,16 @@ def filter_stack_related_messages(messages, stack_name):
 def cleanup_old_messages(message, stack_name):
     now = datetime.now(tz=tz.tzutc())
     message_dict = json.loads(message.body)
+    message_status = message_dict.get('status')
+    message_payload = message_dict.get('message')
+    message_rtype = message_dict.get('resourceType')
     message_stack_name = message_dict['stackName']
     message_timestamp = message_dict['timestamp']
     message_datetime = date_parser.parse(message_timestamp)
-    logger.info(('[CLEANUP] message_datetime: %s, message_timestamp: %s, '
-                 'message_stack_name: %s, stackname: %s'),
-                message_datetime, now, message_stack_name, stack_name)
+    logger.info('{0}: {1}: {2}: {3}'.format(message_stack_name,
+                                            message_status,
+                                            message_rtype,
+                                            message_payload))
     if (message_stack_name == stack_name and
             message_datetime < now):
         logger.info('delete message "%s"', message_dict)
@@ -114,6 +118,8 @@ def receive(back_channel_url, timeout,  stack_name, region,
         messages = queue.receive_messages(MaxNumberOfMessages=1)
         for message in messages:
             if process_message(message, stack_name):
+                cleanup(back_channel_url, timeout, stack_name, region)
+                logger.info('Final CFN message received')
                 return
         timeout -= poll_interval
         sleep(poll_interval)
@@ -146,7 +152,6 @@ def process_message(message, stack_name):
                 'Crassus failed with "{0}"'.format(message_payload))
         elif (message_rtype ==
               'AWS::CloudFormation::Stack' and message_status in FINAL_STATES):
-            logger.info('Final CFN message received')
             return True
 
 
