@@ -13,6 +13,8 @@ from gaius.service import (parse_parameters,
                            generate_message,
                            notify,
                            receive,
+                           cleanup,
+                           cleanup_old_messages,
                            is_related_message,
                            DeploymentErrorException)
 
@@ -53,6 +55,54 @@ class TestNotify(TestCase):
         notify(None, None, 'ANY_ARN', None)
         sns_client_mock.publish.assert_called_once_with(TopicArn='ANY_ARN',
                                                         Message='"MESSAGE"')
+
+
+class TestCleanup(TestCase):
+
+    @mock_sqs
+    def test_cleanup_should_remove_old_message(self):
+        message_body = ('{ ' +
+                        '"status": "UPDATE_COMPLETE", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stackName": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        queue.send_message(MessageBody=message_body)
+        cleanup('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1')
+
+    @mock_sqs
+    @patch('gaius.service.cleanup_old_messages')
+    def test_cleanup_should_stop_on_timout_eq_0(
+            self, mock_cleanup_old_messages):
+        message_body = ('{ ' +
+                        '"status": "UPDATE_COMPLETE", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stackName": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        cleanup('BACK_CHANNEL', 0, 'my-teststack', 'eu-west-1')
+        assert not mock_cleanup_old_messages.called
+
+    @mock_sqs
+    def test_cleanup_should_not_delete_other_stacks_messages(self):
+        message_body = ('{ ' +
+                        '"status": "UPDATE_COMPLETE", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stackName": "other-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "AWS::CloudFormation::Stack"}')
+        message = Mock()
+        message.body = message_body
+        assert not cleanup_old_messages(message, 'my-teststack')
 
 
 class TestReceive(TestCase):
@@ -112,6 +162,23 @@ class TestReceive(TestCase):
         with self.assertRaisesRegexp(DeploymentErrorException,
                                      'Crassus failed with "User Initiated"'):
             receive('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1',
+                    poll_interval=1)
+
+    @patch('gaius.service.is_related_message')
+    @mock_sqs
+    def test_receive_should_fail_on_no_cnf_message(self, mock_rel_massage):
+        message_body = ('{ ' +
+                        '"status": "CREATE_FAILED", ' +
+                        '"timestamp": "2015-11-24T13:14:16.575Z", ' +
+                        '"stack_name": "my-teststack", ' +
+                        '"message": "User Initiated", ' +
+                        '"emitter": "cloudformation", ' +
+                        '"resourceType": "foo"}')
+        sqs = boto3.resource('sqs')
+        queue = sqs.create_queue(QueueName='BACK_CHANNEL')
+        queue.send_message(MessageBody=message_body)
+        mock_rel_massage.return_value = True
+        receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
                     poll_interval=1)
 
     @patch('gaius.service.is_related_message')
