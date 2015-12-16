@@ -16,16 +16,16 @@ logger = logging.getLogger('gaius')
 
 FINAL_STATES = [
     'CREATE_COMPLETE',
-    'ROLLBACK_COMPLETE',
     'DELETE_COMPLETE',
     'UPDATE_COMPLETE',
-    'UPDATE_ROLLBACK_COMPLETE'
 ]
 
 ERROR_STATES = [
     'CREATE_FAILED',
     'ROLLBACK_FAILED',
     'DELETE_FAILED',
+    'ROLLBACK_COMPLETE',
+    'UPDATE_ROLLBACK_COMPLETE',
     'UPDATE_ROLLBACK_FAILED'
 ]
 
@@ -125,8 +125,11 @@ def receive(back_channel_url, timeout,  stack_name, region,
                 return
         timeout -= poll_interval
         sleep(poll_interval)
-    logger.info('No final CFN message was received after %s seconds',
-                timeout_orig)
+    # raise exception if we reach this point as presumably no final stage 
+    # is reached within the timeout
+    raise DeploymentErrorException(
+        'No final CFN message was received after {0} seconds'.format(
+        timeout_orig))
 
 
 def process_message(message, stack_name):
