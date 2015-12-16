@@ -121,11 +121,16 @@ class TestReceive(TestCase):
         queue.send_message(MessageBody=message_body)
 
         mock_rel_message.return_value = False
-        receive('BACK_CHANNEL', 1, 'my-another-teststack', 'eu-west-1',
-                poll_interval=1)
+        with self.assertRaisesRegexp(DeploymentErrorException,
+                                     'No final CFN message was received after 1 seconds'):
+            receive('BACK_CHANNEL', 1, 'my-another-teststack', 'eu-west-1',
+                    poll_interval=1)
 
-        receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
-                poll_interval=1)
+  
+        with self.assertRaisesRegexp(DeploymentErrorException,
+                                     'No final CFN message was received after 1 seconds'):
+            receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
+                    poll_interval=1)
         # self.assertTrue(False)
 
     @patch('gaius.service.is_related_message')
@@ -178,7 +183,9 @@ class TestReceive(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         mock_rel_massage.return_value = True
-        receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
+        with self.assertRaisesRegexp(DeploymentErrorException,
+                                     'No final CFN message was received after 1 seconds'):
+            receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
                     poll_interval=1)
 
     @patch('gaius.service.is_related_message')
