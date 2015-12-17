@@ -86,8 +86,7 @@ def notify(stack_name, parameters, topic_arn, region):
         aws_secret_access_key=_credentials['SecretAccessKey'],
         aws_session_token=_credentials['SessionToken'])
     sns_topic = sns_resource.Topic(topic_arn)
-    result = sns_topic.publish(
-        TargetArn=topic_arn, Message=json.dumps(message))
+    result = sns_topic.publish(Message=json.dumps(message))
     logger.debug(result)
     return result
 

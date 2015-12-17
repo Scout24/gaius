@@ -52,8 +52,7 @@ class TestNotify(TestCase):
         sns_resource_mock.Topic.return_value = sns_topic_mock
 
         notify(None, None, 'ANY_ARN', None)
-        sns_topic_mock.publish.assert_called_once_with(
-            TargetArn='ANY_ARN', Message='"MESSAGE"')
+        sns_topic_mock.publish.assert_called_once_with(Message='"MESSAGE"')
 
 
 class TestCredentials(TestCase):
