@@ -29,6 +29,37 @@ ERROR_STATES = [
     'DELETE_COMPLETE'
 ]
 
+# Empty credentials per default, so the environment ones will be used
+_credentials = {
+    'AccessKeyId': None,
+    'SecretAccessKey': None,
+    'SessionToken': None
+}
+
+
+def credentials_set(credentials):
+    """
+    Set the module credentials for when a user wants to use other ones
+    than given in the environment.
+    """
+    _credentials.update({
+        'AccessKeyId': credentials.get('AccessKeyId'),
+        'SecretAccessKey': credentials.get('SecretAccessKey'),
+        'SessionToken': credentials.get('SessionToken')
+    })
+
+
+def credentials_reset():
+    """
+    Reset (empty) the module credentials so the commands will use the
+    ones specified by the environment.
+    """
+    _credentials.update({
+        'AccessKeyId': None,
+        'SecretAccessKey': None,
+        'SessionToken': None
+    })
+
 
 def parse_parameters(parameters):
     """ Parse input parameters from the command line """
@@ -49,12 +80,15 @@ def generate_message(stack_name, parameters, region, version=1):
 def notify(stack_name, parameters, topic_arn, region):
     """ Sends an update notification to Crassus """
     message = generate_message(stack_name, parameters, region)
-    sns_client = boto3.client('sns', region_name=region)
-    json_answer = sns_client.publish(
-        TopicArn=topic_arn,
-        Message=json.dumps(message),
-    )
-    logger.debug(json_answer)
+    sns_resource = boto3.resource(
+        'sns', region_name=region,
+        aws_access_key_id=_credentials['AccessKeyId'],
+        aws_secret_access_key=_credentials['SecretAccessKey'],
+        aws_session_token=_credentials['SessionToken'])
+    sns_topic = sns_resource.Topic(topic_arn)
+    result = sns_topic.publish(
+        TargetArn=topic_arn, Message=json.dumps(message))
+    logger.debug(result)
 
 
 def is_related_message(message_dict, stack_name):
@@ -68,7 +102,11 @@ def is_related_message(message_dict, stack_name):
 
 def cleanup(back_channel_url, timeout,  stack_name, region):
     """Cleans up old messages on the deployment pipeline"""
-    sqs_resource = boto3.resource('sqs', region_name=region)
+    sqs_resource = boto3.resource(
+        'sqs', region_name=region,
+        aws_access_key_id=_credentials['AccessKeyId'],
+        aws_secret_access_key=_credentials['SecretAccessKey'],
+        aws_session_token=_credentials['SessionToken'])
     queue = sqs_resource.Queue(url=back_channel_url)
 
     while timeout > 0:
@@ -114,7 +152,11 @@ def receive(back_channel_url, timeout,  stack_name, region,
             poll_interval=2):
     """Reads out the back-channel on the deployment pipeline"""
     timeout_orig = timeout
-    sqs_resource = boto3.resource('sqs', region_name=region)
+    sqs_resource = boto3.resource(
+        'sqs', region_name=region,
+        aws_access_key_id=_credentials['AccessKeyId'],
+        aws_secret_access_key=_credentials['SecretAccessKey'],
+        aws_session_token=_credentials['SessionToken'])
     queue = sqs_resource.Queue(url=back_channel_url)
     while timeout > 0:
         messages = queue.receive_messages(MaxNumberOfMessages=1)
@@ -125,11 +167,11 @@ def receive(back_channel_url, timeout,  stack_name, region,
                 return
         timeout -= poll_interval
         sleep(poll_interval)
-    # raise exception if we reach this point as presumably no final stage 
+    # raise exception if we reach this point as presumably no final stage
     # is reached within the timeout
     raise DeploymentErrorException(
         'No final CFN message was received after {0} seconds'.format(
-        timeout_orig))
+            timeout_orig))
 
 
 def process_message(message, stack_name):

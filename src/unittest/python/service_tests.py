@@ -9,14 +9,10 @@ import boto3
 
 from moto import mock_sqs
 
-from gaius.service import (parse_parameters,
-                           generate_message,
-                           notify,
-                           receive,
-                           cleanup,
-                           cleanup_old_messages,
-                           is_related_message,
-                           DeploymentErrorException)
+from gaius.service import (
+    parse_parameters, generate_message, notify, receive, cleanup,
+    cleanup_old_messages, is_related_message, DeploymentErrorException,
+    credentials_set, credentials_reset, _credentials)
 
 
 class TestParseParameters(TestCase):
@@ -47,14 +43,46 @@ class TestGenerateMessage(TestCase):
 
 class TestNotify(TestCase):
 
-    @patch('boto3.client')
+    @patch('boto3.resource')
     @patch('gaius.service.generate_message', Mock(return_value='MESSAGE'))
     def test_should_send_sns_message(self, boto3_mock):
-        sns_client_mock = Mock()
-        boto3_mock.return_value = sns_client_mock
+        sns_resource_mock = Mock()
+        sns_topic_mock = Mock()
+        boto3_mock.return_value = sns_resource_mock
+        sns_resource_mock.Topic.return_value = sns_topic_mock
+
         notify(None, None, 'ANY_ARN', None)
-        sns_client_mock.publish.assert_called_once_with(TopicArn='ANY_ARN',
-                                                        Message='"MESSAGE"')
+        sns_topic_mock.publish.assert_called_once_with(
+            TargetArn='ANY_ARN', Message='"MESSAGE"')
+
+
+class TestCredentials(TestCase):
+
+    """
+    The service module should be able to use different credentials than
+    specified via the environment.
+
+    This way, gaius can be used as a generic API for communicating with
+    crassus, not just as a commandline tool.
+    """
+
+    def test_credentials_set_reset(self):
+        """Check empty, set, test, reset, test."""
+        empty_setting = {
+            'AccessKeyId': None,
+            'SecretAccessKey': None,
+            'SessionToken': None
+        }
+        nonempty_setting = {
+            'AccessKeyId': '1',
+            'SecretAccessKey': '2',
+            'SessionToken': '3'
+        }
+        self.assertEqual(_credentials, empty_setting)
+        credentials_set(nonempty_setting)
+        self.assertEqual(_credentials, nonempty_setting)
+        credentials_reset()
+        self.assertEqual(_credentials, empty_setting)
 
 
 class TestCleanup(TestCase):
@@ -126,7 +154,6 @@ class TestReceive(TestCase):
             receive('BACK_CHANNEL', 1, 'my-another-teststack', 'eu-west-1',
                     poll_interval=1)
 
-  
         with self.assertRaisesRegexp(DeploymentErrorException,
                                      'No final CFN message was received after 1 seconds'):
             receive('BACK_CHANNEL', 1, 'my-teststack', 'eu-west-1',
