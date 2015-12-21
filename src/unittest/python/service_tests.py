@@ -6,6 +6,7 @@ from unittest2 import TestCase
 from mock import patch, Mock
 
 import boto3
+from datetime import datetime
 
 from moto import mock_sqs
 
@@ -132,7 +133,7 @@ class TestCleanup(TestCase):
             '"resourceType": "AWS::CloudFormation::Stack"}')
         message = Mock()
         message.body = message_body
-        self.assertIsNone(cleanup_old_messages(message, 'my-teststack'))
+        self.assertIsNone(cleanup_old_messages(datetime.now(), message, 'my-teststack'))
 
 
 class TestReceive(TestCase):

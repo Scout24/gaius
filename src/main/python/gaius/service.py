@@ -109,13 +109,14 @@ def cleanup(back_channel_url, duration,  stack_name, region):
         aws_session_token=_credentials['SessionToken'])
     queue = sqs_resource.Queue(url=back_channel_url)
     end_time = datetime.now() + timedelta(seconds=duration)
+    now_time = datetime.now()
 
     while datetime.now() <= end_time:
         messages = queue.receive_messages(MaxNumberOfMessages=10)
         messages = filter_stack_related_messages(messages, stack_name)
         if messages:
             for message in messages:
-                cleanup_old_messages(message, stack_name)
+                cleanup_old_messages(now_time, message, stack_name)
                 sleep(1)
 
 
@@ -134,8 +135,8 @@ def log_delete_message(message_dict):
                 message_status, message_rtype, message_payload)
 
 
-def cleanup_old_messages(message, stack_name):
-    now = datetime.now(tz=tz.tzutc())
+def cleanup_old_messages(now, message, stack_name):
+    now = now.replace(tzinfo=tz.tzutc())
     message_dict = json.loads(message.body)
     message_stack_name = message_dict['stackName']
     message_timestamp = message_dict['timestamp']
