@@ -100,7 +100,7 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def cleanup(back_channel_url, timeout,  stack_name, region):
+def cleanup(back_channel_url, duration,  stack_name, region):
     """Cleans up old messages on the deployment pipeline"""
     sqs_resource = boto3.resource(
         'sqs', region_name=region,
@@ -108,16 +108,15 @@ def cleanup(back_channel_url, timeout,  stack_name, region):
         aws_secret_access_key=_credentials['SecretAccessKey'],
         aws_session_token=_credentials['SessionToken'])
     queue = sqs_resource.Queue(url=back_channel_url)
-    end_time = datetime.now() + timedelta(seconds=timeout)
+    end_time = datetime.now() + timedelta(seconds=duration)
 
     while datetime.now() <= end_time:
         messages = queue.receive_messages(MaxNumberOfMessages=10)
         messages = filter_stack_related_messages(messages, stack_name)
-        if not messages:
-            return
-        for message in messages:
-            cleanup_old_messages(message, stack_name)
-            sleep(1)
+        if messages:
+            for message in messages:
+                cleanup_old_messages(message, stack_name)
+                sleep(1)
 
 
 def filter_stack_related_messages(messages, stack_name):

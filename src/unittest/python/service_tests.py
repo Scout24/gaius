@@ -100,7 +100,7 @@ class TestCleanup(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         queue.send_message(MessageBody=message_body)
-        cleanup('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1')
+        cleanup('BACK_CHANNEL', 30, 'my-teststack', 'eu-west-1')
 
     @mock_sqs
     @patch('gaius.service.cleanup_old_messages')
