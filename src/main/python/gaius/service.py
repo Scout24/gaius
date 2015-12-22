@@ -100,7 +100,7 @@ def is_related_message(message_dict, stack_name):
     return False
 
 
-def cleanup(back_channel_url, duration,  stack_name, region):
+def cleanup(back_channel_url, duration, stack_name, region):
     """Cleans up old messages on the deployment pipeline"""
     sqs_resource = boto3.resource(
         'sqs', region_name=region,
@@ -130,7 +130,7 @@ def log_delete_message(message_dict):
     message_payload = message_dict.get('message')
     message_rtype = message_dict.get('resourceType')
     message_stack_name = message_dict['stackName']
-    logger.info('%s: %s: %s: %s', message_stack_name,
+    logger.info('DELETED - %s: %s: %s: %s', message_stack_name,
                 message_status, message_rtype, message_payload)
 
 
