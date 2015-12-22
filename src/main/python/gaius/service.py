@@ -117,6 +117,7 @@ def cleanup(back_channel_url, duration, stack_name, region):
         if messages:
             for message in messages:
                 cleanup_old_messages(now_time, message, stack_name)
+            sleep(1)
 
 
 def filter_stack_related_messages(messages, stack_name):
