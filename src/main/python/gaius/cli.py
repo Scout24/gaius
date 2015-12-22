@@ -41,6 +41,7 @@ def communicate():
     back_channel_url = arguments['--back-channel']
     timeout = int(arguments['--timeout'])
 
+    logger.info('Will now attempt to cleanup old messages.')
     service.cleanup(back_channel_url, 30, stack_name, region)
 
     service.notify(stack_name, parameters, topic_arn, region)
