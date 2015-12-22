@@ -162,8 +162,9 @@ def receive(back_channel_url, timeout,  stack_name, region,
         messages = queue.receive_messages(MaxNumberOfMessages=1)
         for message in messages:
             if process_message(message, stack_name):
-                cleanup(back_channel_url, 10, stack_name, region)
                 logger.info('Final CFN message received')
+                logger.info('Will now attempt to cleanup remaining messages')
+                cleanup(back_channel_url, 10, stack_name, region)
                 return
         timeout -= poll_interval
         sleep(poll_interval)

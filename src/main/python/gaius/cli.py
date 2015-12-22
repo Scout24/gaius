@@ -44,8 +44,10 @@ def communicate():
     logger.info('Will now attempt to cleanup old messages.')
     service.cleanup(back_channel_url, 30, stack_name, region)
 
+    logger.info('Will now trigger the update process.')
     service.notify(stack_name, parameters, topic_arn, region)
     try:
+        logger.info('Will now start to receive update messages.')
         service.receive(back_channel_url, timeout, stack_name, region)
     except service.DeploymentErrorException as ex:
         logger.warn("Error occured during deployment: %s", ex)
