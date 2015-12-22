@@ -183,6 +183,7 @@ def process_message(message, stack_name):
 
     logger.debug(message_dict)
     if not is_related_message(message_dict, stack_name):
+        logger.debug('Not related message found.')
         message.change_visibility(VisibilityTimeout=0)
     else:
         log_delete_message(message_dict)
