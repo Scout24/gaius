@@ -6,6 +6,7 @@ from unittest2 import TestCase
 from mock import patch, Mock
 
 import boto3
+from datetime import datetime
 
 from moto import mock_sqs
 
@@ -100,7 +101,7 @@ class TestCleanup(TestCase):
         queue = sqs.create_queue(QueueName='BACK_CHANNEL')
         queue.send_message(MessageBody=message_body)
         queue.send_message(MessageBody=message_body)
-        cleanup('BACK_CHANNEL', 600, 'my-teststack', 'eu-west-1')
+        cleanup('BACK_CHANNEL', 30, 'my-teststack', 'eu-west-1')
 
     @mock_sqs
     @patch('gaius.service.cleanup_old_messages')
@@ -132,7 +133,7 @@ class TestCleanup(TestCase):
             '"resourceType": "AWS::CloudFormation::Stack"}')
         message = Mock()
         message.body = message_body
-        self.assertIsNone(cleanup_old_messages(message, 'my-teststack'))
+        self.assertIsNone(cleanup_old_messages(datetime.now(), message, 'my-teststack'))
 
 
 class TestReceive(TestCase):

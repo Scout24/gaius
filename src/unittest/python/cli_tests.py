@@ -25,7 +25,7 @@ class CliTests(TestCase):
         mock_docopt.return_value = parameters
         cli.communicate()
         mock_cleanup.assert_called_once_with(
-            'crassus-output', 600, 'mystack', 'eu-west-1')
+            'crassus-output', 30, 'mystack', 'eu-west-1')
         mock_notify.assert_called_once_with(
             'mystack',
             'parameter1=value1,parameter2=value2',
